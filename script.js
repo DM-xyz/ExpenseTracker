@@ -6,14 +6,9 @@ const form = document.getElementById('form');
 const text = document.getElementById('text');
 const amount = document.getElementById('amount');
 
-const dummyTransactions = [
-    { id: 1, text: 'Flowers', amount: -20 },
-    { id: 2, text: 'Pay', amount: 500 },
-    { id: 3, text: 'Book', amount: -18 },
-    { id: 4, text: 'Camera', amount: 150 }
-];
-
-let transactions = dummyTransactions;
+const localStorageTransactions = JSON.parse(localStorage.getItem('transactions'));
+ 
+let transactions = localStorage.getItem('transactions') !== null ? localStorageTransactions : [];
 
 function addTransaction(e) {
     e.preventDefault();
@@ -24,14 +19,24 @@ function addTransaction(e) {
         const transaction = {
             id: generateID(),
             text: text.value,
-            amount: amount.value
-        }
-        console.log(transaction);
+            amount: +amount.value
+        };
+        
+        transactions.push(transaction);
+
+        addTransactionDOM(transaction);
+
+        updateValues();
+
+        updateLocalStorage();
+
+        text.value = '';
+        amount.value = '';
     }
 }
 
 function generateID() {
-    return Math.floor(Math.random() * 100000000);
+    return Math.floor(Math.random() * 10000000);
 }
 
 function addTransactionDOM(transaction) {
@@ -42,7 +47,7 @@ function addTransactionDOM(transaction) {
 
     item.innerHTML = `
         ${transaction.text} <span>${sign}${Math.abs(transaction.amount)}</span>
-        <button class="delete-btn">x</button>
+        <button class="delete-btn" onclick="removeTransaction(${transaction.id})">x</button>
     `;
 
     list.appendChild(item);
@@ -64,6 +69,18 @@ function updateValues() {
     balance.innerText = `$${total}`;
     money_plus.innerText = `$${income}`;
     money_minus.innerText = `$${expense}`;
+}
+
+function removeTransaction(id) {
+    transactions = transactions.filter(transaction => transaction.id !== id);
+
+    updateLocalStorage();
+
+    init();
+}
+
+function updateLocalStorage() {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
 }
 
 function init() {
